@@ -76,8 +76,8 @@ export function AppSidebar({ user, credits }: AppSidebarProps) {
                       className={cn(
                         "transition-colors",
                         isActive
-                          ? "border-l-2 border-primary bg-primary/8 font-medium hover:bg-primary/10"
-                          : "border-l-2 border-transparent hover:bg-sidebar-accent"
+                          ? "border-l-2 border-primary bg-accent font-medium text-accent-foreground hover:bg-accent"
+                          : "border-l-2 border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )}
                     >
                       <HugeiconsIcon icon={item.icon} strokeWidth={2} />
@@ -94,12 +94,15 @@ export function AppSidebar({ user, credits }: AppSidebarProps) {
       <SidebarFooter>
         <SidebarGroup className="group-data-[collapsible=icon]:px-0">
           <SidebarGroupContent>
-            <div className="space-y-3 rounded-lg border border-sidebar-border bg-background/60 p-3 group-data-[collapsible=icon]:hidden">
+            <div className="space-y-3 rounded-lg border border-border bg-card p-3 group-data-[collapsible=icon]:hidden">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-medium text-muted-foreground">
                   Billing / Credits
                 </span>
-                <Badge variant="outline" className="text-[0.625rem]">
+                <Badge
+                  variant="outline"
+                  className="border-border bg-accent text-[0.625rem] text-accent-foreground"
+                >
                   Pro — Coming Soon
                 </Badge>
               </div>
@@ -123,15 +126,15 @@ export function AppSidebar({ user, credits }: AppSidebarProps) {
                   className={cn(
                     "transition-colors",
                     pathname === settingsNav.href
-                      ? "border-l-2 border-primary bg-primary/8 font-medium hover:bg-primary/10"
-                      : "border-l-2 border-transparent hover:bg-sidebar-accent"
+                      ? "border-l-2 border-primary bg-accent font-medium text-accent-foreground hover:bg-accent"
+                      : "border-l-2 border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
                   <Avatar size="sm" className="size-7">
                     {user.avatarUrl ? (
                       <AvatarImage src={user.avatarUrl} alt={user.fullName} />
                     ) : null}
-                    <AvatarFallback className="bg-primary/10 text-[0.625rem] font-medium text-primary">
+                    <AvatarFallback className="bg-accent text-[0.625rem] font-medium text-accent-foreground">
                       {user.initials}
                     </AvatarFallback>
                   </Avatar>
