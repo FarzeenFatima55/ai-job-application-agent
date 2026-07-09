@@ -9,14 +9,21 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useIsCompact } from "@/hooks/use-is-compact";
 import type { DashboardUser } from "@/lib/dashboard/get-user";
 
+import { OnboardingDialog } from "@/components/onboarding/onboarding-dialog";
+
 import { AppSidebar } from "./app-sidebar";
 
 type DashboardShellProps = {
   user: DashboardUser;
+  needsOnboarding: boolean;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ user, children }: DashboardShellProps) {
+export function DashboardShell({
+  user,
+  needsOnboarding,
+  children,
+}: DashboardShellProps) {
   const isCompact = useIsCompact();
 
   return (
@@ -32,6 +39,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           </header>
           <div className="flex-1 p-6 lg:p-8">{children}</div>
         </SidebarInset>
+        <OnboardingDialog open={needsOnboarding} />
       </TooltipProvider>
     </SidebarProvider>
   );
