@@ -51,7 +51,12 @@ export function AppSidebar({ user, credits }: AppSidebarProps) {
               tooltip="Rolefit AI"
               className="hover:bg-transparent active:bg-transparent"
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
+              <span
+                className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground"
+                style={{
+                  boxShadow: "0 0 10px color-mix(in srgb, var(--primary) 55%, transparent)",
+                }}
+              >
                 RF
               </span>
               <span className="truncate font-semibold">Rolefit AI</span>
@@ -80,7 +85,19 @@ export function AppSidebar({ user, credits }: AppSidebarProps) {
                           : "border-l-2 border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )}
                     >
-                      <HugeiconsIcon icon={item.icon} strokeWidth={2} />
+                      <HugeiconsIcon
+                        icon={item.icon}
+                        strokeWidth={2}
+                        style={
+                          isActive
+                            ? {
+                              color: "var(--primary)",
+                              filter:
+                                "drop-shadow(0 0 4px color-mix(in srgb, var(--primary) 70%, transparent))",
+                            }
+                            : undefined
+                        }
+                      />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -130,7 +147,16 @@ export function AppSidebar({ user, credits }: AppSidebarProps) {
                       : "border-l-2 border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
-                  <Avatar size="sm" className="size-7">
+                  <Avatar
+                    size="sm"
+                    className="size-7"
+                    style={{
+                      boxShadow:
+                        pathname === settingsNav.href
+                          ? "0 0 8px color-mix(in srgb, var(--primary) 55%, transparent)"
+                          : undefined,
+                    }}
+                  >
                     {user.avatarUrl ? (
                       <AvatarImage src={user.avatarUrl} alt={user.fullName} />
                     ) : null}
