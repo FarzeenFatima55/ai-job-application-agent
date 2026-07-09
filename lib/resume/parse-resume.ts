@@ -4,7 +4,7 @@ import {
   type ResponseSchema,
 } from "@google/generative-ai";
 
-import { RESUME_MIME_TYPES } from "@/lib/database.types";
+import { RESUME_MIME_TYPES } from "@/lib/constants";
 
 import type { ParsedResume } from "../profile/types";
 

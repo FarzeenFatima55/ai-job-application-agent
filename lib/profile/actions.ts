@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { getSessionUser } from "@/lib/auth/get-session-user";
-import { MAX_RESUME_SIZE_BYTES } from "@/lib/database.types";
+import { MAX_RESUME_SIZE_BYTES } from "@/lib/constants";
 import { persistProfileData } from "@/lib/profile/persist-profile";
 import { getResumeDownloadUrl } from "@/lib/profile/queries";
 import {
@@ -90,7 +90,7 @@ export async function uploadAndParseResume(
   try {
     const docxText =
       mimeType ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         ? await extractDocxText(buffer)
         : undefined;
 

@@ -31,8 +31,8 @@ export const mainNav: NavItem[] = [
     icon: UserCircleIcon,
   },
   {
-    title: "Application Status",
-    href: "/dashboard/application-status",
+    title: "View Analytics",
+    href: "/dashboard/analytics",
     icon: TaskDone01Icon,
   },
 ];

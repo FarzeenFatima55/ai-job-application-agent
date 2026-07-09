@@ -1,6 +1,7 @@
 import mammoth from "mammoth";
 
-import { RESUME_MIME_TYPES } from "@/lib/database.types";
+import { RESUME_MIME_TYPES } from "@/lib/constants";
+
 
 export async function extractDocxText(buffer: Buffer): Promise<string> {
   const result = await mammoth.extractRawText({ buffer });
