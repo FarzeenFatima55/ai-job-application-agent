@@ -179,18 +179,7 @@ export function SignUpForm() {
       return;
     }
 
-    setUsername("");
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    setTouched({
-      username: false,
-      email: false,
-      password: false,
-      confirmPassword: false,
-    });
-
-    setMessage("We've sent a verification email to your inbox. Please verify your email before signing in.");
+    setMessage("Check your email to confirm your account, then sign in.");
     setIsLoading(false);
   }
 
@@ -210,36 +199,6 @@ export function SignUpForm() {
       setError(oauthError.message);
       setIsGoogleLoading(false);
     }
-  }
-
-  if (message) {
-    return (
-      <AuthShell
-        title="Verify your email"
-        description="Check your email to confirm your account."
-        footer={
-          <>
-            Already verified?{" "}
-            <a href="/sign-in" className="font-medium text-foreground underline-offset-4 hover:underline">
-              Sign in
-            </a>
-          </>
-        }
-      >
-        <div className="space-y-4 text-center">
-          <p className="text-sm text-muted-foreground leading-normal">
-            {message}
-          </p>
-          <Button
-            onClick={() => router.push("/sign-in")}
-            size="lg"
-            className="h-11 w-full text-sm mt-2"
-          >
-            Go to Sign In
-          </Button>
-        </div>
-      </AuthShell>
-    );
   }
 
   return (
