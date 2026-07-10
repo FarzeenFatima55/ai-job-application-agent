@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,9 +22,19 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { mainNav, settingsNav, dashboardHomePath } from "@/lib/dashboard/navigation";
+import { mainNav, dashboardHomePath } from "@/lib/dashboard/navigation";
 import type { DashboardUser } from "@/lib/dashboard/get-user";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { Logout01Icon } from "@hugeicons/core-free-icons";
 
 type CreditsInfo = {
   used: number;
@@ -38,7 +48,15 @@ type AppSidebarProps = {
 
 export function AppSidebar({ user, credits }: AppSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
   const creditsPercent = Math.round((credits.used / credits.total) * 100);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.replace("/sign-in");
+    router.refresh();
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -135,44 +153,59 @@ export function AppSidebar({ user, credits }: AppSidebarProps) {
 
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  size="lg"
-                  render={<Link href={settingsNav.href} />}
-                  isActive={pathname === settingsNav.href}
-                  tooltip={settingsNav.title}
-                  className={cn(
-                    "transition-colors",
-                    pathname === settingsNav.href
-                      ? "border-l-2 border-primary bg-accent font-medium text-accent-foreground hover:bg-accent"
-                      : "border-l-2 border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  )}
-                >
-                  <Avatar
-                    size="sm"
-                    className="size-7"
-                    style={{
-                      boxShadow:
-                        pathname === settingsNav.href
-                          ? "0 0 8px color-mix(in srgb, var(--primary) 55%, transparent)"
-                          : undefined,
-                    }}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <SidebarMenuButton
+                        size="lg"
+                        tooltip="User Menu"
+                        className="transition-colors border-l-2 border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="size-7"
+                        >
+                          {user.avatarUrl ? (
+                            <AvatarImage src={user.avatarUrl} alt={user.fullName} />
+                          ) : null}
+                          <AvatarFallback className="bg-accent text-[0.625rem] font-medium text-accent-foreground">
+                            {user.initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
+                          <span className="truncate text-xs font-medium">
+                            {user.fullName}
+                          </span>
+                          <span className="truncate text-[0.625rem] text-muted-foreground">
+                            Manage Account
+                          </span>
+                        </div>
+                      </SidebarMenuButton>
+                    }
+                  />
+                  <DropdownMenuContent
+                    className="w-56"
+                    align="end"
+                    side="top"
+                    sideOffset={12}
                   >
-                    {user.avatarUrl ? (
-                      <AvatarImage src={user.avatarUrl} alt={user.fullName} />
-                    ) : null}
-                    <AvatarFallback className="bg-accent text-[0.625rem] font-medium text-accent-foreground">
-                      {user.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate text-xs font-medium">
-                      {user.fullName}
-                    </span>
-                    <span className="truncate text-[0.625rem] text-muted-foreground">
-                      Profile Settings
-                    </span>
-                  </div>
-                </SidebarMenuButton>
+                    <div className="px-3 py-2">
+                      <p className="text-sm font-medium">{user.fullName}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleSignOut}
+                      variant="destructive"
+                      className="cursor-pointer"
+                    >
+                      <HugeiconsIcon icon={Logout01Icon} className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

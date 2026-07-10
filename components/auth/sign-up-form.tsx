@@ -39,11 +39,57 @@ function GoogleIcon() {
   );
 }
 
+function validateUsername(val: string): string | null {
+  if (!val) return "Username is required.";
+  if (val.length < 3 || val.length > 20) {
+    return "Username must be between 3 and 20 characters.";
+  }
+  if (!/^[a-zA-Z]/.test(val)) {
+    return "Username must start with a letter.";
+  }
+  if (/^\d+$/.test(val)) {
+    return "Username cannot consist only of numbers.";
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(val)) {
+    return "Username can only contain letters, numbers, underscores, and hyphens.";
+  }
+  return null;
+}
+
+function validateEmail(val: string): string | null {
+  if (!val) return "Email is required.";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(val)) {
+    return "Please enter a valid email address.";
+  }
+  return null;
+}
+
+function validatePassword(val: string): string | null {
+  if (!val) return "Password is required.";
+  if (val.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
+  if (!/[A-Z]/.test(val)) {
+    return "Password must contain at least one uppercase letter.";
+  }
+  if (!/[a-z]/.test(val)) {
+    return "Password must contain at least one lowercase letter.";
+  }
+  if (!/[0-9]/.test(val)) {
+    return "Password must contain at least one number.";
+  }
+  if (!/[!@#$%^&*(),.?\":{}|<>]/.test(val)) {
+    return "Password must contain at least one special character.";
+  }
+  return null;
+}
+
 export function SignUpForm() {
   const router = useRouter();
   const supabase = createClient();
 
-  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -52,18 +98,60 @@ export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  const [touched, setTouched] = useState({
+    username: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
+
+  const usernameError = touched.username ? validateUsername(username) : null;
+  const emailError = touched.email ? validateEmail(email) : null;
+  const passwordError = touched.password ? validatePassword(password) : null;
+  const confirmPasswordError = touched.confirmPassword
+    ? (password !== confirmPassword ? "Passwords do not match." : null)
+    : null;
+
+  const isFormValid =
+    username.length >= 3 &&
+    username.length <= 20 &&
+    validateUsername(username) === null &&
+    validateEmail(email) === null &&
+    validatePassword(password) === null &&
+    confirmPassword.length > 0 &&
+    password === confirmPassword;
+
+  const handleBlur = (field: keyof typeof touched) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const handleChange = (field: keyof typeof touched, value: string) => {
+    if (field === "username") setUsername(value);
+    if (field === "email") setEmail(value);
+    if (field === "password") setPassword(value);
+    if (field === "confirmPassword") setConfirmPassword(value);
+
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
   async function handleEmailSignUp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setMessage(null);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
+    const uError = validateUsername(username);
+    const eError = validateEmail(email);
+    const pError = validatePassword(password);
+    const cpError = password !== confirmPassword ? "Passwords do not match." : null;
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    if (uError || eError || pError || cpError) {
+      setTouched({
+        username: true,
+        email: true,
+        password: true,
+        confirmPassword: true,
+      });
+      setError(uError || eError || pError || cpError || "Please fix validation errors.");
       return;
     }
 
@@ -74,7 +162,7 @@ export function SignUpForm() {
       password,
       options: {
         data: {
-          full_name: fullName,
+          full_name: username,
         },
       },
     });
@@ -91,7 +179,18 @@ export function SignUpForm() {
       return;
     }
 
-    setMessage("Check your email to confirm your account, then sign in.");
+    setUsername("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setTouched({
+      username: false,
+      email: false,
+      password: false,
+      confirmPassword: false,
+    });
+
+    setMessage("We've sent a verification email to your inbox. Please verify your email before signing in.");
     setIsLoading(false);
   }
 
@@ -111,6 +210,36 @@ export function SignUpForm() {
       setError(oauthError.message);
       setIsGoogleLoading(false);
     }
+  }
+
+  if (message) {
+    return (
+      <AuthShell
+        title="Verify your email"
+        description="Check your email to confirm your account."
+        footer={
+          <>
+            Already verified?{" "}
+            <a href="/sign-in" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Sign in
+            </a>
+          </>
+        }
+      >
+        <div className="space-y-4 text-center">
+          <p className="text-sm text-muted-foreground leading-normal">
+            {message}
+          </p>
+          <Button
+            onClick={() => router.push("/sign-in")}
+            size="lg"
+            className="h-11 w-full text-sm mt-2"
+          >
+            Go to Sign In
+          </Button>
+        </div>
+      </AuthShell>
+    );
   }
 
   return (
@@ -150,22 +279,24 @@ export function SignUpForm() {
 
         <form onSubmit={handleEmailSignUp} className="space-y-4">
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+            <Field data-invalid={!!usernameError}>
+              <FieldLabel htmlFor="username">Username</FieldLabel>
               <Input
-                id="fullName"
+                id="username"
                 type="text"
-                autoComplete="name"
-                placeholder="Jane Doe"
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
+                autoComplete="username"
+                placeholder="username"
+                value={username}
+                onChange={(event) => handleChange("username", event.target.value)}
+                onBlur={() => handleBlur("username")}
                 required
                 disabled={isLoading || isGoogleLoading}
                 className="h-11"
               />
+              {usernameError ? <FieldError>{usernameError}</FieldError> : null}
             </Field>
 
-            <Field>
+            <Field data-invalid={!!emailError}>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
                 id="email"
@@ -173,14 +304,16 @@ export function SignUpForm() {
                 autoComplete="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => handleChange("email", event.target.value)}
+                onBlur={() => handleBlur("email")}
                 required
                 disabled={isLoading || isGoogleLoading}
                 className="h-11"
               />
+              {emailError ? <FieldError>{emailError}</FieldError> : null}
             </Field>
 
-            <Field>
+            <Field data-invalid={!!passwordError}>
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Input
                 id="password"
@@ -188,15 +321,22 @@ export function SignUpForm() {
                 autoComplete="new-password"
                 placeholder="At least 8 characters"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => handleChange("password", event.target.value)}
+                onBlur={() => handleBlur("password")}
                 required
                 disabled={isLoading || isGoogleLoading}
                 className="h-11"
               />
-              <FieldDescription>Use at least 8 characters.</FieldDescription>
+              {passwordError ? (
+                <FieldError>{passwordError}</FieldError>
+              ) : (
+                <FieldDescription>
+                  Must be min 8 chars with 1 uppercase, 1 lowercase, 1 number, and 1 special char.
+                </FieldDescription>
+              )}
             </Field>
 
-            <Field>
+            <Field data-invalid={!!confirmPasswordError}>
               <FieldLabel htmlFor="confirmPassword">Confirm password</FieldLabel>
               <Input
                 id="confirmPassword"
@@ -204,11 +344,13 @@ export function SignUpForm() {
                 autoComplete="new-password"
                 placeholder="Re-enter your password"
                 value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
+                onChange={(event) => handleChange("confirmPassword", event.target.value)}
+                onBlur={() => handleBlur("confirmPassword")}
                 required
                 disabled={isLoading || isGoogleLoading}
                 className="h-11"
               />
+              {confirmPasswordError ? <FieldError>{confirmPasswordError}</FieldError> : null}
             </Field>
           </FieldGroup>
 
@@ -223,7 +365,7 @@ export function SignUpForm() {
             type="submit"
             size="lg"
             className="h-11 w-full text-sm"
-            disabled={isLoading || isGoogleLoading}
+            disabled={isLoading || isGoogleLoading || !isFormValid}
           >
             {isLoading ? <Spinner /> : null}
             Create account
